@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Liquidación</title>
+    <style>
+        body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background-color: #f4f4f4;
+            }
+            .container {
+                max-width: 500px;
+                margin: auto;
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                text-align: center;
+            }
+            label, input {
+                display: block;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            button {
+                width: 100%;
+                padding: 10px;
+                background-color: #F3B2DB;
+                color: black;
+                border: none;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #F3B2DB;
+            }
+            .resultados {
+                margin-top: 20px;
+                background-color: #e9ecef;
+                padding: 10px;
+                border-radius: 8px;
+            }
+    </style>
+    
+</head>
+<body>
+
+    <script>
+            function calcular() {
+                // Obtener los valores de los inputs
+                let fechaInicio = document.getElementById('inicio').value;
+                let fechaFin = document.getElementById('fin').value;
+                let salario = parseFloat(document.getElementById('salario').value);
+
+                // Validar que los campos no estén vacíos
+                if (!fechaInicio || !fechaFin || !salario) {
+                    alert("Por favor, complete todos los campos.");
+                    return;
+                }
+
+                // Convertir las fechas a objetos Date
+                let inicio = new Date(fechaInicio);
+                let fin = new Date(fechaFin);
+
+                // Función para calcular días exactos trabajados con ajuste manual de meses
+                function calcularDiasTrabajados(inicio, fin) {
+                    let diaInicio = inicio.getDate();
+                    let mesInicio = inicio.getMonth() + 1; // Los meses empiezan desde 0, así que se suma 1
+                    let añoInicio = inicio.getFullYear();
+
+                    let diaFin = fin.getDate();
+                    let mesFin = fin.getMonth() + 1;
+                    let añoFin = fin.getFullYear();
+
+                    // Ajustar días
+                    let dias = diaFin - diaInicio;
+                    if (dias < 0) {
+                        dias += 30; // Si es negativo, añadimos 30 días y restamos 1 mes
+                        mesFin -= 1;
+                    }
+
+                    // Ajustar meses
+                    let meses = mesFin - mesInicio;
+                    if (meses < 0) {
+                        meses += 12; // Si es negativo, añadimos 12 meses y restamos 1 año
+                        añoFin -= 1;
+                    }
+
+                    // Ajustar años
+                    let años = añoFin - añoInicio;
+
+                    // Verificar si los meses trabajados son menores a 3
+                    let totalMeses = (años * 12) + meses;
+                    if (totalMeses < 3) {
+                        alert("No se puede liquidar para un tiempo menor a 3 meses");
+                        return null; // Se detiene la función si es menor a 3 meses
+                    }
+
+                    // Cálculo total de días trabajados
+                    let diasTrabajados = (años * 360) + (meses * 30) + dias;
+                    return diasTrabajados;
+                }
+
+                // Calcular los días trabajados correctamente
+                let diasTrabajados = calcularDiasTrabajados(inicio, fin);
+
+                // Si la función retorna null, detener el cálculo
+                if (diasTrabajados === null) {
+                    return;
+                }
+
+                // Cálculo correcto de cesantías, intereses, prima de servicios, vacaciones y total
+                let cesantias = salario * diasTrabajados / 360;
+                let interesesCesantias = cesantias * 0.12 * diasTrabajados / 360;
+                let primaServicios = salario * diasTrabajados / 360;
+                let valorDia = salario / 30;
+                let vacaciones = (15 * (diasTrabajados / 360)) * valorDia;
+                let total = cesantias + interesesCesantias + primaServicios + vacaciones + salario;
+
+                // Mostrar los resultados
+                document.getElementById('resultadoDias').textContent = `Días trabajados: ${diasTrabajados}`;
+                document.getElementById('resultadoCesantias').textContent = `Cesantías: $${cesantias.toFixed(2)}`;
+                document.getElementById('resultadoIntereses').textContent = `Intereses de Cesantías: $${interesesCesantias.toFixed(2)}`;
+                document.getElementById('resultadoPrima').textContent = `Prima de Servicios: $${primaServicios.toFixed(2)}`;
+                document.getElementById('resultadoVacaciones').textContent = `Vacaciones: $${vacaciones.toFixed(2)}`;
+                document.getElementById('total').textContent = `Total: $${total.toFixed(2)}`;
+            }
+
+    </script>
+    
+    <div class="container">
+        <h1>Calculadora de Liquidación</h1>
+
+        <label for="inicio">Fecha de Inicio:</label>
+        <input type="date" id="inicio" name="inicio">
+
+        <label for="fin">Fecha de Fin:</label>
+        <input type="date" id="fin" name="fin">
+
+        <label for="salario">Salario:</label>
+        <input type="number" id="salario" name="salario">
+
+        <button onclick="calcular()">Calcular</button>
+
+        <div class="resultados">
+            <h3>Resultados</h3>
+            <p id="resultadoDias">Días trabajados: </p>
+            <p id="resultadoCesantias">Cesantías: </p>
+            <p id="resultadoIntereses">Intereses de Cesantías: </p>
+            <p id="resultadoPrima">Prima de Servicios: </p>
+            <p id="resultadoVacaciones">Vacaciones: </p>
+            <p id="total">Total: </p>
+        </div>
+    </div>
+</body>
+</html>
